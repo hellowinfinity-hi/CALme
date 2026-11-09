@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#073b9b"><link rel="manifest" href="manifest.webmanifest">
+<title>CALme Calculator</title>
+<style>
+:root{--bg:#f1f4fb;--panel:#fff;--text:#15213a;--muted:#68758d;--key:#e8edf7;--blue:#1765e8;--orange:#ff9d16;--line:#dce4f2}
+[data-theme=dark]{--bg:#101827;--panel:#1b2639;--text:#f5f7fc;--muted:#aab6ca;--key:#2a3850;--blue:#367cff;--orange:#ffad32;--line:#34435c}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+.app{max-width:480px;margin:auto;padding:18px 16px 28px}.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.brand{font-size:29px;font-weight:850;letter-spacing:-1.5px}.brand span{color:var(--orange)}
+.actions{display:flex;gap:8px}.small,.tab,.key,.action{border:0;border-radius:13px;background:var(--key);color:var(--text);padding:11px 13px;font-weight:650}
+.tabs{display:flex;gap:8px;margin-bottom:14px}.tab{flex:1}.tab.active{background:var(--blue);color:white}
+.screen{background:var(--panel);border-radius:24px;padding:18px 16px;margin-bottom:12px;box-shadow:0 8px 25px #13294b12}
+.expression{min-height:25px;text-align:right;color:var(--muted);font-size:16px;overflow-wrap:anywhere}.display{font-size:42px;font-weight:750;text-align:right;min-height:58px;overflow-wrap:anywhere;letter-spacing:-1px}
+.keys{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.key{height:64px;font-size:22px;background:var(--panel);box-shadow:0 2px 8px #14274a12;border:1px solid var(--line)}
+.key.op{background:var(--blue);color:white;border:0}.key.orange{background:var(--orange);color:#17213a;border:0}.key.utility{color:var(--blue)}
+.note{color:var(--muted);font-size:12px;text-align:center;margin:16px 0}
+.section-title{display:flex;align-items:center;justify-content:space-between;font-weight:750;margin:8px 0 12px}
+.entry{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:13px;margin:9px 0}
+.entry-main{font-weight:700;overflow-wrap:anywhere}.meta{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-top:7px;gap:8px}
+.row{display:flex;gap:8px;flex-wrap:wrap}.action{background:var(--blue);color:white}.action.secondary{background:var(--key);color:var(--text)}.action.danger{background:#d94151;color:white}
+.settings label{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}
+input[type=file]{display:none}.empty{text-align:center;color:var(--muted);padding:35px 10px}
+.ad-slot{border:1px dashed var(--line);border-radius:12px;color:var(--muted);text-align:center;padding:12px;font-size:11px;margin-top:18px}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+ <header class="top"><div class="brand">CAL<span>me</span></div><div class="actions"><button class="small" id="themeBtn" aria-label="Toggle theme">☾</button><button class="small" id="langBtn">සිං / EN</button></div></header>
+ <nav class="tabs"><button class="tab active" data-page="calc" id="tabCalc">Calculator</button><button class="tab" data-page="history" id="tabHistory">History</button><button class="tab" data-page="settings" id="tabSettings">Settings</button></nav>
+ <main id="calcPage">
+  <section class="screen"><div class="expression" id="expression"></div><div class="display" id="display" aria-live="polite">0</div></section>
+  <section class="keys" id="keys">
+   <button class="key utility" data-k="AC">AC</button><button class="key utility" data-k="⌫">⌫</button><button class="key utility" data-k="%">%</button><button class="key op" data-k="÷">÷</button>
+   <button class="key" data-k="7">7</button><button class="key" data-k="8">8</button><button class="key" data-k="9">9</button><button class="key op" data-k="×">×</button>
+   <button class="key" data-k="4">4</button><button class="key" data-k="5">5</button><button class="key" data-k="6">6</button><button class="key op" data-k="−">−</button>
+   <button class="key" data-k="1">1</button><button class="key" data-k="2">2</button><button class="key" data-k="3">3</button><button class="key op" data-k="+">+</button>
+   <button class="key utility" data-k="±">±</button><button class="key" data-k="0">0</button><button class="key" data-k=".">.</button><button class="key orange" data-k="=">=</button>
+  </section>
+ </main>
+ <main id="historyPage" class="hidden"><div class="section-title"><span id="historyTitle">Calculation History</span><button class="action danger" id="clearHistory">Clear all</button></div><div id="historyList"></div></main>
+ <main id="settingsPage" class="hidden settings">
+  <div class="section-title" id="settingsTitle">Settings</div>
+  <label><span id="themeLabel">Dark mode</span><input type="checkbox" id="darkToggle"></label>
+  <label><span id="soundLabel">Button sound</span><input type="checkbox" id="soundToggle"></label>
+  <div class="section-title" style="margin-top:22px" id="backupTitle">Backup & Restore</div>
+  <div class="row"><button class="action" id="exportBtn">Export backup</button><button class="action secondary" id="importBtn">Restore backup</button><input type="file" id="fileInput" accept="application/json,.json"></div>
+  <p class="note" id="backupNote">Your history is saved on this device. Export a backup before changing phones.</p>
+ </main>
+ <div class="ad-slot" id="adNote">Advertisement space • AdMob can be connected in the Android release</div>
+ <p class="note">CALme • Simple · Smart · Reliable</p>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+let current='0', first=null, operator=null, waiting=false, expression='', history=JSON.parse(localStorage.getItem('calme_history')||'[]');
+let lang=localStorage.getItem('calme_lang')||'en', theme=localStorage.getItem('calme_theme')||'light', sound=localStorage.getItem('calme_sound')==='true';
+const words={en:{calc:'Calculator',history:'History',settings:'Settings',histTitle:'Calculation History',clear:'Clear all',dark:'Dark mode',sound:'Button sound',backup:'Backup & Restore',export:'Export backup',restore:'Restore backup',note:'Your history is saved on this device. Export a backup before changing phones.',empty:'No calculations saved yet.',saved:'Backup saved.',restored:'History restored.',bad:'Invalid backup file.',confirm:'Delete all calculation history?',ad:'Advertisement space • AdMob can be connected in the Android release'},si:{calc:'ගණකය',history:'ඉතිහාසය',settings:'සැකසුම්',histTitle:'ගණනය කිරීමේ ඉතිහාසය',clear:'සියල්ල මකන්න',dark:'අඳුරු පෙනුම',sound:'බොත්තම් ශබ්දය',backup:'Backup සහ Restore',export:'Backup ලබාගන්න',restore:'Backup නැවත ලබාගන්න',note:'ඔබගේ ඉතිහාසය මෙම දුරකථනයේ සුරැකේ. දුරකථනය මාරු කිරීමට පෙර Backup එකක් ගන්න.',empty:'තවම ගණනය කිරීම් නැත.',saved:'Backup සුරැකුණා.',restored:'ඉතිහාසය නැවත ලබාගත්තා.',bad:'Backup ගොනුව වලංගු නැත.',confirm:'සියලු ඉතිහාසය මකන්නද?',ad:'දැන්වීම් සඳහා ඉඩ • Android නිකුතුවේදී AdMob සම්බන්ධ කළ හැකියි'}};
+function t(k){return words[lang][k]}
+function save(){localStorage.setItem('calme_history',JSON.stringify(history))}
+function render(){ $('display').textContent=current; $('expression').textContent=expression; $('historyList').innerHTML=''; $('historyTitle').textContent=t('histTitle'); $('clearHistory').textContent=t('clear'); if(!history.length){$('historyList').innerHTML=`<div class="empty">${t('empty')}</div>`} else history.forEach((h,i)=>{const d=document.createElement('div');d.className='entry';d.innerHTML=`<div class="entry-main"></div><div class="meta"><span></span><span></span></div><div class="row" style="margin-top:10px"><button class="action secondary">Use result</button><button class="action danger">Delete</button></div>`;d.querySelector('.entry-main').textContent=h.expression;d.querySelectorAll('.meta span')[0].textContent=h.date;d.querySelectorAll('.meta span')[1].textContent=h.time;d.querySelectorAll('button')[0].onclick=()=>{current=h.result;expression='';first=null;operator=null;waiting=true;showPage('calc');render()};d.querySelectorAll('button')[1].onclick=()=>{history.splice(i,1);save();render()};$('historyList').appendChild(d)});$('tabCalc').textContent=t('calc');$('tabHistory').textContent=t('history');$('tabSettings').textContent=t('settings');$('settingsTitle').textContent=t('settings');$('themeLabel').textContent=t('dark');$('soundLabel').textContent=t('sound');$('backupTitle').textContent=t('backup');$('exportBtn').textContent=t('export');$('importBtn').textContent=t('restore');$('backupNote').textContent=t('note');$('adNote').textContent=t('ad');$('darkToggle').checked=theme==='dark';$('soundToggle').checked=sound}
+function showPage(p){['calc','history','settings'].forEach(x=>{$(x+'Page').classList.toggle('hidden',x!==p);document.querySelector(`[data-page="${x}"]`).classList.toggle('active',x===p)})}
+function beep(){if(!sound)return;try{let c=new (window.AudioContext||window.webkitAudioContext)(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=650;g.gain.value=.025;o.start();o.stop(c.currentTime+.035)}catch(e){}}
+function fmt(n){return Number(n.toPrecision(12)).toString()}
+function press(k){beep();if('0123456789.'.includes(k)&&k.length===1){if(waiting){current=k==='.'?'0.':k;waiting=false}else if(k==='.'&&current.includes('.')){}else current=current==='0'&&k!=='.'?k:current+k;render();return}
+if(k==='AC'){current='0';first=null;operator=null;expression='';waiting=false;render();return}
+if(k==='⌫'){current=current.length>1?current.slice(0,-1):'0';render();return}
+if(k==='±'){current=String(-Number(current));render();return}
+if(k==='%'){current=String(Number(current)/100);render();return}
+if(['+','−','×','÷'].includes(k)){first=Number(current);operator=k;expression=current+' '+k;waiting=true;render();return}
+if(k==='='&&operator&&first!==null){let a=first,b=Number(current),r=operator==='+'?a+b:operator==='−'?a-b:operator==='×'?a*b: b===0?null:a/b;if(r===null){current='Error';first=null;operator=null;waiting=true;render();return}let result=fmt(r),now=new Date();history.unshift({expression:`${fmt(a)} ${operator} ${fmt(b)} = ${result}`,result,date:now.toLocaleDateString(),time:now.toLocaleTimeString()});save();expression=`${fmt(a)} ${operator} ${fmt(b)} =`;current=result;first=null;operator=null;waiting=true;render()}}
+$('keys').addEventListener('click',e=>{let b=e.target.closest('[data-k]');if(b)press(b.dataset.k)});
+document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>showPage(b.dataset.page));
+$('clearHistory').onclick=()=>{if(confirm(t('confirm'))){history=[];save();render()}};
+$('themeBtn').onclick=()=>{theme=theme==='dark'?'light':'dark';applyTheme()};
+function applyTheme(){document.documentElement.dataset.theme=theme;localStorage.setItem('calme_theme',theme);$('themeBtn').textContent=theme==='dark'?'☀':'☾';render()}
+$('darkToggle').onchange=e=>{theme=e.target.checked?'dark':'light';applyTheme()};
+$('langBtn').onclick=()=>{lang=lang==='en'?'si':'en';localStorage.setItem('calme_lang',lang);render()};
+$('soundToggle').onchange=e=>{sound=e.target.checked;localStorage.setItem('calme_sound',sound);render()};
+$('exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify({app:'CALme',version:1,exportedAt:new Date().toISOString(),history},null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='CALme-backup.json';a.click();URL.revokeObjectURL(a.href);alert(t('saved'))};
+$('importBtn').onclick=()=>$('fileInput').click();
+$('fileInput').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const data=JSON.parse(await f.text());if(data.app!=='CALme'||!Array.isArray(data.history))throw Error();history=data.history.filter(x=>x&&typeof x.expression==='string'&&typeof x.result==='string'&&typeof x.date==='string'&&typeof x.time==='string');save();render();alert(t('restored'))}catch(err){alert(t('bad'))}e.target.value=''};
+applyTheme();render();
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+</script>
+</body></html>

@@ -1,0 +1,9 @@
+{
+  "name": "CALme Calculator",
+  "short_name": "CALme",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f1f4fb",
+  "theme_color": "#073b9b",
+  "description": "Simple calculator with calculation history and backup"
+}
